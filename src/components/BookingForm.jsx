@@ -2,6 +2,8 @@ import { useState } from 'react'
 import { Plane, Train, Bus, Ship, Globe, MapPin, Calendar, Users, Search, Clock, ArrowRight, Mail, Phone } from 'lucide-react'
 import axios from 'axios'
 
+const API_URL = 'https://remo-travels.onrender.com'
+
 function BookingForm({ onBookingSuccess }) {
   const [travelType, setTravelType] = useState('international')
   const [selectedMode, setSelectedMode] = useState('airplane')
@@ -12,8 +14,6 @@ function BookingForm({ onBookingSuccess }) {
   const [email, setEmail] = useState('')
   const [phone, setPhone] = useState('')
   const [searchResults, setSearchResults] = useState(null)
-
-  // --- NEW: Error States for Professional Validation ---
   const [emailError, setEmailError] = useState('')
   const [phoneError, setPhoneError] = useState('')
 
@@ -27,10 +27,8 @@ function BookingForm({ onBookingSuccess }) {
   const countries = ['India', 'United States', 'United Kingdom', 'Canada', 'Australia', 'Germany', 'France', 'Japan', 'Singapore', 'UAE', 'Thailand', 'Malaysia']
   const domesticCities = ['Mumbai', 'Delhi', 'Bangalore', 'Chennai', 'Kolkata', 'Hyderabad', 'Pune', 'Jaipur', 'Goa', 'Kerala']
 
-  // --- NEW: Professional Validation Handlers ---
   const handlePhoneChange = (e) => {
     const value = e.target.value;
-    // Strictly allows only numbers and max 10 digits
     if (/^\d*$/.test(value) && value.length <= 10) {
       setPhone(value);
       if (value.length > 0 && value.length < 10) {
@@ -44,10 +42,7 @@ function BookingForm({ onBookingSuccess }) {
   const handleEmailChange = (e) => {
     const value = e.target.value;
     setEmail(value);
-    
-    // Regex for standard email format
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    
     if (value.length === 0) {
       setEmailError("");
     } else if (!value.includes("@")) {
@@ -71,13 +66,10 @@ function BookingForm({ onBookingSuccess }) {
 
   const handleSearch = (e) => {
     e.preventDefault()
-    
-    // Final check before proceeding
     if (emailError || phoneError || phone.length !== 10) {
         alert("Please fix the errors in the form before calculating price.");
         return;
     }
-
     if (fromCountry && toCountry) {
       const zones = {
         'India': 1, 'UAE': 2, 'Singapore': 2, 'Malaysia': 2, 'Thailand': 2,
@@ -86,21 +78,17 @@ function BookingForm({ onBookingSuccess }) {
         'Mumbai': 1, 'Pune': 1, 'Goa': 2, 'Bangalore': 2, 'Hyderabad': 2,
         'Chennai': 3, 'Delhi': 4, 'Jaipur': 4, 'Kolkata': 5, 'Kerala': 3
       }
-
       const basePrices = { airplane: 4000, train: 600, bus: 300, ship: 3500 }
       const zoneStart = zones[fromCountry] || 1
       const zoneEnd = zones[toCountry] || 1
       const distanceFactor = Math.abs(zoneStart - zoneEnd) + 1
       const typeMultiplier = travelType === 'international' ? 5 : 1
-
       const totalAmount = (basePrices[selectedMode] * distanceFactor * typeMultiplier) * passengers
-
       const formattedPrice = new Intl.NumberFormat('en-IN', {
         style: 'currency',
         currency: 'INR',
         maximumFractionDigits: 0,
       }).format(totalAmount)
-      
       setSearchResults({
         from: fromCountry,
         to: toCountry,
@@ -108,7 +96,7 @@ function BookingForm({ onBookingSuccess }) {
         duration: calculateArrivalTime(),
         date: date,
         passengers: passengers,
-        price: formattedPrice 
+        price: formattedPrice
       })
     }
   }
@@ -118,7 +106,6 @@ function BookingForm({ onBookingSuccess }) {
       alert("Please ensure all fields are correctly filled!");
       return;
     }
-
     const dataToSend = {
       travel_mode: searchResults.mode,
       origin: searchResults.from,
@@ -126,13 +113,12 @@ function BookingForm({ onBookingSuccess }) {
       travel_date: searchResults.date,
       passengers: searchResults.passengers,
       total_price: searchResults.price,
-      email: email,             
-      phone_number: phone,      
+      email: email,
+      phone_number: phone,
       status: 'Pending'
     }
-
     try {
-      const response = await axios.post('http://127.0.0.1:8000/api/tickets/', dataToSend);
+      const response = await axios.post(`${API_URL}/api/tickets/`, dataToSend);
       if (onBookingSuccess) {
         onBookingSuccess(response.data.id);
       }
@@ -193,40 +179,22 @@ function BookingForm({ onBookingSuccess }) {
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
-            {/* --- PROFESSIONALLY VALIDATED EMAIL --- */}
             <div>
               <label className="block text-gray-400 text-sm mb-2">Email Address</label>
               <div className="relative">
                 <Mail className="absolute left-3 top-3.5 w-4 h-4 text-gray-400" />
-                <input 
-                  required 
-                  type="email" 
-                  placeholder="name@email.com" 
-                  value={email} 
-                  onChange={handleEmailChange} 
-                  className={`w-full bg-[#334155] border ${emailError ? 'border-red-500' : 'border-[#475569]'} rounded-lg py-3 pl-10 pr-4 text-white outline-none transition-colors`} 
-                />
+                <input required type="email" placeholder="name@email.com" value={email} onChange={handleEmailChange} className={`w-full bg-[#334155] border ${emailError ? 'border-red-500' : 'border-[#475569]'} rounded-lg py-3 pl-10 pr-4 text-white outline-none transition-colors`} />
               </div>
               {emailError && <p className="text-red-500 text-xs mt-1 ml-1 font-medium">{emailError}</p>}
             </div>
-
-            {/* --- PROFESSIONALLY VALIDATED PHONE --- */}
             <div>
               <label className="block text-gray-400 text-sm mb-2">Phone Number</label>
               <div className="relative">
                 <Phone className="absolute left-3 top-3.5 w-4 h-4 text-gray-400" />
-                <input 
-                  required 
-                  type="tel" 
-                  placeholder="10-digit number" 
-                  value={phone} 
-                  onChange={handlePhoneChange} 
-                  className={`w-full bg-[#334155] border ${phoneError ? 'border-red-500' : 'border-[#475569]'} rounded-lg py-3 pl-10 pr-4 text-white outline-none transition-colors`} 
-                />
+                <input required type="tel" placeholder="10-digit number" value={phone} onChange={handlePhoneChange} className={`w-full bg-[#334155] border ${phoneError ? 'border-red-500' : 'border-[#475569]'} rounded-lg py-3 pl-10 pr-4 text-white outline-none transition-colors`} />
               </div>
               {phoneError && <p className="text-red-500 text-xs mt-1 ml-1 font-medium">{phoneError}</p>}
             </div>
-
             <div>
               <label className="block text-gray-400 text-sm mb-2">Passengers</label>
               <select value={passengers} onChange={(e) => setPassengers(Number(e.target.value))} className="w-full bg-[#334155] border border-[#475569] rounded-lg py-3 px-4 text-white">
