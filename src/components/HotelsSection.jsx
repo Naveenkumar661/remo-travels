@@ -2,17 +2,16 @@ import { useState, useEffect } from 'react'
 import { Star, MapPin, X, Search, CheckCircle2 } from 'lucide-react'
 import axios from 'axios'
 
+const API_URL = 'https://remo-travels.onrender.com'
+
 function HotelsSection() {
-  // --- States ---
   const [hotels, setHotels] = useState([])
   const [loading, setLoading] = useState(true)
   const [activeFilter, setActiveFilter] = useState('all')
   const [searchTerm, setSearchTerm] = useState('')
   const [selectedHotel, setSelectedHotel] = useState(null)
-  
-  // Booking States
   const [isBooking, setIsBooking] = useState(false)
-  const [bookingStatus, setBookingStatus] = useState('idle') 
+  const [bookingStatus, setBookingStatus] = useState('idle')
   const [bookingData, setBookingData] = useState({
     email: '',
     phone_number: '',
@@ -20,9 +19,8 @@ function HotelsSection() {
     passengers: 1
   })
 
-  // --- Fetch Data ---
   useEffect(() => {
-    axios.get('http://127.0.0.1:8000/api/hotels/')
+    axios.get(`${API_URL}/api/hotels/`)
       .then(res => {
         setHotels(res.data)
         setLoading(false)
@@ -33,28 +31,23 @@ function HotelsSection() {
       })
   }, [])
 
-  // --- Filter Logic ---
   const filters = ['all', 'leisure', 'business', 'honeymoon', 'family']
 
   const filteredHotels = hotels.filter(hotel => {
     const matchesType = activeFilter === 'all' || hotel.hotel_type === activeFilter;
-    const matchesSearch = hotel.name.toLowerCase().includes(searchTerm.toLowerCase()) || 
+    const matchesSearch = hotel.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
                           hotel.location.toLowerCase().includes(searchTerm.toLowerCase());
     return matchesType && matchesSearch;
   });
 
-  // Handle Search Submit (Reacting to Enter)
   const handleSearchSubmit = (e) => {
     e.preventDefault();
-    // This provides a visual "flash" or confirmation that search was triggered
     console.log("Searching for:", searchTerm);
   };
 
-  // --- Booking Submission ---
   const handleBookingSubmit = async (e) => {
     e.preventDefault();
     setBookingStatus('loading');
-    
     const payload = {
       ...bookingData,
       destination: selectedHotel.name,
@@ -62,9 +55,8 @@ function HotelsSection() {
       travel_mode: "Hotel Stay",
       total_price: selectedHotel.price * bookingData.passengers
     };
-
     try {
-      await axios.post('http://127.0.0.1:8000/api/bookings/', payload);
+      await axios.post(`${API_URL}/api/bookings/`, payload);
       setBookingStatus('success');
       setTimeout(() => {
         setIsBooking(false);
@@ -83,65 +75,48 @@ function HotelsSection() {
 
   return (
     <div className="max-w-6xl mx-auto px-4 py-12">
-      {/* Header */}
       <div className="text-center mb-8">
         <h2 className="text-3xl font-bold mb-2 text-white tracking-tight">Featured Hotels</h2>
         <p className="text-gray-400">Discover handpicked destinations from our database</p>
       </div>
 
-      {/* --- Search Bar with Enter Support --- */}
       <form onSubmit={handleSearchSubmit} className="max-w-xl mx-auto mb-4 relative">
         <div className="relative group">
           <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 w-5 h-5 group-focus-within:text-[#0ea5e9] transition-colors" />
-          <input 
-            type="text" 
+          <input
+            type="text"
             placeholder="Search by hotel or city (e.g., Goa)..."
             className="w-full bg-[#1e293b] border border-[#334155] rounded-2xl py-4 pl-12 pr-24 text-white focus:border-[#0ea5e9] focus:ring-2 focus:ring-[#0ea5e9]/20 outline-none transition-all shadow-lg"
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
           />
-          <button 
-            type="submit"
-            className="absolute right-2 top-1/2 -translate-y-1/2 bg-[#0ea5e9] hover:bg-[#0284c7] text-white px-4 py-2 rounded-xl text-sm font-bold transition-all"
-          >
+          <button type="submit" className="absolute right-2 top-1/2 -translate-y-1/2 bg-[#0ea5e9] hover:bg-[#0284c7] text-white px-4 py-2 rounded-xl text-sm font-bold transition-all">
             Search
           </button>
         </div>
       </form>
-      
-      {/* Results Indicator */}
+
       <div className="text-center mb-10">
         <p className="text-xs font-mono text-gray-500 uppercase tracking-widest">
           {searchTerm ? `Found ${filteredHotels.length} matches for "${searchTerm}"` : `Showing all ${hotels.length} hotels`}
         </p>
       </div>
 
-      {/* Filter Buttons */}
       <div className="flex flex-wrap justify-center gap-3 mb-12">
         {filters.map((filter) => (
-          <button
-            key={filter}
-            onClick={() => setActiveFilter(filter)}
-            className={`px-6 py-2 rounded-full font-semibold capitalize transition-all duration-300 ${
-              activeFilter === filter 
-                ? 'bg-[#0ea5e9] text-white shadow-lg shadow-sky-500/30 scale-105' 
-                : 'bg-[#1e293b] text-gray-400 hover:text-white border border-[#334155]'
-            }`}
-          >
+          <button key={filter} onClick={() => setActiveFilter(filter)}
+            className={`px-6 py-2 rounded-full font-semibold capitalize transition-all duration-300 ${activeFilter === filter ? 'bg-[#0ea5e9] text-white shadow-lg shadow-sky-500/30 scale-105' : 'bg-[#1e293b] text-gray-400 hover:text-white border border-[#334155]'}`}>
             {filter}
           </button>
         ))}
       </div>
 
-      {/* Hotel Grid */}
       {filteredHotels.length > 0 ? (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
           {filteredHotels.map((hotel) => (
-            <div
-              key={hotel.id}
+            <div key={hotel.id}
               className="bg-[#1e293b] rounded-2xl overflow-hidden border border-[#334155] hover:border-[#0ea5e9] transition-all duration-500 cursor-pointer flex flex-col group hover:shadow-2xl hover:shadow-sky-500/10"
-              onClick={() => setSelectedHotel(hotel)}
-            >
+              onClick={() => setSelectedHotel(hotel)}>
               <div className="relative h-60 overflow-hidden">
                 <img src={hotel.image_main} alt={hotel.name} className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110" />
                 <div className="absolute top-4 right-4 bg-[#0ea5e9]/90 backdrop-blur-md text-white px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-wider">
@@ -175,7 +150,7 @@ function HotelsSection() {
       ) : (
         <div className="text-center py-20">
           <div className="bg-[#1e293b] inline-block p-6 rounded-3xl border border-[#334155] mb-4">
-             <Search className="w-12 h-12 text-gray-600 mx-auto" />
+            <Search className="w-12 h-12 text-gray-600 mx-auto" />
           </div>
           <h3 className="text-xl font-bold text-white">No stays found</h3>
           <p className="text-gray-400 mt-2">Try searching for something else or clear filters.</p>
@@ -183,7 +158,6 @@ function HotelsSection() {
         </div>
       )}
 
-      {/* Modal: Hotel Details */}
       {selectedHotel && !isBooking && (
         <div className="fixed inset-0 bg-black/90 backdrop-blur-sm flex items-center justify-center z-[100] p-4">
           <div className="bg-[#0f172a] rounded-3xl max-w-4xl w-full max-h-[90vh] overflow-y-auto border border-[#334155] shadow-2xl">
@@ -206,22 +180,20 @@ function HotelsSection() {
                 </div>
               </div>
               <p className="text-gray-300 text-lg leading-relaxed mb-10">{selectedHotel.description}</p>
-              
               <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mb-10">
                 <div className="space-y-3">
-                   <h4 className="text-white font-bold flex items-center gap-2 uppercase text-xs tracking-widest text-gray-500">3D Virtual Tour</h4>
-                   <div className="h-60 rounded-2xl overflow-hidden border border-[#334155] shadow-inner">
-                     <iframe src={selectedHotel.map_3d_url} width="100%" height="100%" className="border-none grayscale-[0.3] hover:grayscale-0 transition-all"></iframe>
-                   </div>
+                  <h4 className="text-white font-bold flex items-center gap-2 uppercase text-xs tracking-widest text-gray-500">3D Virtual Tour</h4>
+                  <div className="h-60 rounded-2xl overflow-hidden border border-[#334155] shadow-inner">
+                    <iframe src={selectedHotel.map_3d_url} width="100%" height="100%" className="border-none grayscale-[0.3] hover:grayscale-0 transition-all"></iframe>
+                  </div>
                 </div>
                 <div className="space-y-3">
-                   <h4 className="text-white font-bold flex items-center gap-2 uppercase text-xs tracking-widest text-gray-500">Premium Room View</h4>
-                   <div className="h-60 rounded-2xl overflow-hidden border border-[#334155]">
-                     <img src={selectedHotel.image_room || selectedHotel.image_main} className="w-full h-full object-cover" />
-                   </div>
+                  <h4 className="text-white font-bold flex items-center gap-2 uppercase text-xs tracking-widest text-gray-500">Premium Room View</h4>
+                  <div className="h-60 rounded-2xl overflow-hidden border border-[#334155]">
+                    <img src={selectedHotel.image_room || selectedHotel.image_main} className="w-full h-full object-cover" />
+                  </div>
                 </div>
               </div>
-
               <div className="flex flex-col sm:flex-row gap-4 pt-6 border-t border-[#334155]">
                 <button onClick={() => setSelectedHotel(null)} className="flex-1 bg-[#1e293b] text-white font-bold py-5 rounded-2xl hover:bg-[#334155] transition-all">Return to Gallery</button>
                 <button onClick={() => setIsBooking(true)} className="flex-[2] bg-[#0ea5e9] hover:bg-[#0284c7] text-white font-black py-5 rounded-2xl shadow-xl shadow-sky-500/20 transition-all transform hover:-translate-y-1">Confirm Reservation</button>
@@ -231,7 +203,6 @@ function HotelsSection() {
         </div>
       )}
 
-      {/* Modal: Booking Form */}
       {isBooking && (
         <div className="fixed inset-0 bg-black/95 backdrop-blur-md flex items-center justify-center z-[110] p-4">
           <div className="bg-[#1e293b] p-10 rounded-3xl border border-[#334155] w-full max-w-md text-center shadow-2xl">
@@ -252,7 +223,7 @@ function HotelsSection() {
                 <form onSubmit={handleBookingSubmit} className="space-y-5 text-left">
                   <div>
                     <label className="text-gray-400 text-[10px] uppercase font-bold tracking-widest ml-1">Check-in Date</label>
-                    <input type="date" required className="w-full bg-[#0f172a] border border-[#334155] p-4 rounded-xl text-white mt-1 focus:border-[#0ea5e9] outline-none" 
+                    <input type="date" required className="w-full bg-[#0f172a] border border-[#334155] p-4 rounded-xl text-white mt-1 focus:border-[#0ea5e9] outline-none"
                            onChange={e => setBookingData({...bookingData, travel_date: e.target.value})} />
                   </div>
                   <div>
