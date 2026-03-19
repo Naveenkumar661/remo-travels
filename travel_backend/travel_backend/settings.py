@@ -86,7 +86,7 @@ MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 
 CORS_ALLOWED_ORIGINS = config(
     'CORS_ALLOWED_ORIGINS',
-    default='http://localhost:3000,http://localhost:5173'
+    default='http://localhost:3000,http://localhost:5173,https://remo-travels.vercel.app,https://remo-travels-app.vercel.app'
 ).split(',')
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
