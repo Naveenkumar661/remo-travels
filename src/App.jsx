@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import WelcomePopup from './components/WelcomePopup.jsx'
+import WelcomePopup from "./components/welcomePopup.jsx"
 import LoginPopup from './components/LoginPopup.jsx'
 import Navbar from './components/Navbar.jsx'
 import BookingForm from './components/BookingForm.jsx'
