@@ -1,0 +1,14 @@
+asgiref==3.11.1
+cffi==2.0.0
+cryptography==46.0.5
+Django==6.0.3
+django-cors-headers==4.9.0
+djangorestframework==3.17.0
+gunicorn==25.1.0
+packaging==26.0
+pycparser==3.0
+PyMySQL==1.1.2
+python-decouple==3.8
+sqlparse==0.5.5
+tzdata==2025.3
+whitenoise==6.12.0
